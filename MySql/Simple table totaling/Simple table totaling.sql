@@ -13,8 +13,7 @@ insert into people(name, points, clan) values('Brooo', 50, 'Man');
 insert into people(name, points, clan) values('Sist', 50, 'Woman');
 
 select 
-	RANK() OVER (
-    ORDER BY sum(points) DESC) as current_rank,
+	RANK() OVER (ORDER BY sum(points) DESC) as current_rank,
     IF(clan IS NULL, 'no clan specified', clan) as clan, 
     sum(points) as total_points,
     count(*) as total_people
