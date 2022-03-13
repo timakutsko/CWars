@@ -5,11 +5,20 @@ CREATE TABLE `int_mindbox`.`products_lib` (
   PRIMARY KEY (`id_lib`));
   
 ALTER TABLE `int_mindbox`.`products_lib` 
-	ADD CONSTRAINT `fk_products`
-	FOREIGN KEY (`id_product`)
-	REFERENCES `int_mindbox`.`products` (`id`)
-	ON DELETE CASCADE
-	ON UPDATE NO ACTION;
+ADD INDEX `fk_prod_idx` (`id_product` ASC) VISIBLE,
+ADD INDEX `fk_cat_idx` (`id_category` ASC) VISIBLE;
+;
+ALTER TABLE `int_mindbox`.`products_lib` 
+ADD CONSTRAINT `fk_prod`
+  FOREIGN KEY (`id_product`)
+  REFERENCES `int_mindbox`.`products` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION,
+ADD CONSTRAINT `fk_cat`
+  FOREIGN KEY (`id_category`)
+  REFERENCES `int_mindbox`.`product_categories` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
     
 USE `int_mindbox`;
 
