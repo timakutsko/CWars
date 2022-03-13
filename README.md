@@ -1,2 +1,2 @@
 # CWars
-For my cwars codes
+For my codewars codes
