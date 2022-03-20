@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KTS.Parsing.Runner", "KTS.Parsing\KTS.Parsing.Runner.csproj", "{0AEE9F0C-BB38-4A33-95FB-E815EFD05174}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KTS.Parsing.Runner", "KTS.Parsing\KTS.Parsing.Runner.csproj", "{0AEE9F0C-BB38-4A33-95FB-E815EFD05174}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KTS.Parsing.Data", "KTS.Parsing.Data\KTS.Parsing.Data.csproj", "{36085783-AFDE-46F1-A22E-DE71929CC2BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KTS.Parsing.Data", "KTS.Parsing.Data\KTS.Parsing.Data.csproj", "{36085783-AFDE-46F1-A22E-DE71929CC2BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

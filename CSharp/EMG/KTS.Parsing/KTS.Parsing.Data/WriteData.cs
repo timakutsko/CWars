@@ -1,55 +1,48 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using Excel = Microsoft.Office.Interop.Excel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+using OfficeOpenXml;
 
 namespace KTS.Parsing.Data
 {
     public sealed class WriteData
     {
+        private static int _line = 1;
         private string _path;
-        private Excel.Application _excelApp;
-        private Excel.Workbook _workBook;
 
-        public WriteData(string path, string name)
+        ///<summary>
+        /// Создание эксель пакета, с преднастроенной шапкой
+        ///</summary>
+        public WriteData(string path)
         {
-            _excelApp = new Excel.Application();
-            _path = path + "\\" + name + ".xlsx";
+            _path = path;
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            ExcelPackage package = new ExcelPackage(_path);
+            ExcelWorksheet sheet = package.Workbook.Worksheets.Add("MyData");
+            sheet.Cells[1, 1].Value = "Код";
+            sheet.Cells[1, 2].Value = "Имя";
+            sheet.Cells[1, 3].Value = "Изменение";
+            sheet.Cells[1, 4].Value = "Значение";
+            sheet.Cells[1, 5].Value = "Время записи";
+            package.Save();
         }
-        public string SessionNumber { get; set; }
 
-        public void RunWriter(List<CurrentData> currentDatas, int line)
+        ///<summary>
+        /// Генерация пакета данных и запись данного пакета данных в эксель
+        ///</summary>
+        public void Generate (List<CurrentData> parserReports)
         {
-            // Создаю книгу
-            try
+            ExcelPackage package = new ExcelPackage(_path);
+            ExcelWorksheet sheet = package.Workbook.Worksheets[0];
+            foreach (CurrentData report in parserReports)
             {
-                _workBook = _excelApp.Workbooks.Open(_path);
+                _line++;
+                sheet.Cells[_line, 1].Value = report.Code;
+                sheet.Cells[_line, 2].Value = report.Name;
+                sheet.Cells[_line, 3].Value = report.Difference;
+                sheet.Cells[_line, 4].Value = report.Value;
+                sheet.Cells[_line, 5].Value = report.Time;
             }
-            catch
-            {
-                _workBook = _excelApp.Workbooks.Add();
-            }
-            Excel.Worksheet workSheet = _workBook.ActiveSheet;
-            workSheet.Cells[1, "A"] = "Код";
-            workSheet.Cells[1, "B"] = "Название";
-            workSheet.Cells[1, "C"] = "Значение";
-            workSheet.Cells[1, "D"] = "Изменение в процентах";
-            workSheet.Cells[1, "E"] = "Время обновления";
-            // Пишу в эксель
-            foreach (var data in currentDatas)
-            {
-                workSheet.Cells[line, "A"] = data.Code;
-                workSheet.Cells[line, "B"] = data.Name;
-                workSheet.Cells[line, "C"] = data.Difference;
-                workSheet.Cells[line, "D"] = data.Value;
-                workSheet.Cells[line, "E"] = data.Time;
-            }
-            _workBook.Close(true, _path);
-            _excelApp.Quit();
+            package.Save();
         }
     }
 }

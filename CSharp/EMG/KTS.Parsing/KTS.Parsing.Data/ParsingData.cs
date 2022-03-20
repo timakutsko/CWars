@@ -1,73 +1,56 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.IO;
+using System.Net;
+using System.Text.Json;
 using System.Threading;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
-
 
 namespace KTS.Parsing.Data
 {
     public sealed class ParsingData
     {
-        private string _url;
+        private readonly string _apiKey = "890861bddafd480d932873d23412a0f9";
 
-        public ParsingData(string url)
+        public ParsingData()
         {
-            _url = url;
-            // Инициализирую запуск Chrome через Selenium
-            ChromeOptions options = new ChromeOptions();
-            ChromeDriverService cService = ChromeDriverService.CreateDefaultService();
-            cService.HideCommandPromptWindow = true;
-            options.AddArguments("start-maximized");
-            options.AddArguments("disable-infobars");
-            options.AddArguments("headless");
-            Driver = new ChromeDriver(cService, options);
-            Driver.Navigate().GoToUrl(_url);
-            // Ожидаю загрузки страницы
-            Driver.Manage().Timeouts().PageLoad = new TimeSpan(0, 0, 1);
-            Thread.Sleep(((int)Driver.Manage().Timeouts().PageLoad.TotalMilliseconds));
         }
 
-        public readonly IWebDriver Driver;
-        
-        public List<CurrentData> RunParser()
+        ///<summary>
+        /// Чтение данных с помощью веб-запросов из источника
+        ///</summary>
+        public List<CurrentData> RunParser(string[] requestsSymbol)
         {
-            // Создаю List, для хранения данных
             List<CurrentData> parserResult = new List<CurrentData>();
-            // Начинаю получать данные
-            ReadOnlyCollection<IWebElement> currentColl = Driver.FindElements(By.XPath(".//div[@class='rates-line rates-line-js']/ul/li"));
-            for (int i = 0; i < 4; i++)
+            foreach (var currentSymbol in requestsSymbol)
             {
-                CurrentData currentData = new CurrentData();
-                string[] strArray = currentColl[i].Text.Split(' ');
-                currentData.Code = strArray[0];
-                currentData.Name = getName(strArray[0]);
-                currentData.Difference = strArray[1];
-                currentData.Value = strArray[2].Trim('(', ')');
-                currentData.Time = DateTime.Now;
-                parserResult.Add(currentData);
+                // Создаю web-запрос
+                string apiUrl = $"https://api.twelvedata.com/quote?symbol={currentSymbol}&apikey={_apiKey}";
+                WebRequest webRequest = WebRequest.Create(apiUrl);
+                // Получаю ответ и преобразовываю его
+                WebResponse response = webRequest.GetResponse();
+                Stream contentStream = response.GetResponseStream();
+                StreamReader reader = new StreamReader(contentStream);
+                string strContent = reader.ReadToEnd();
+                // Десерилизация данных
+                JsonDocument document = JsonDocument.Parse(strContent);
+                JsonElement root = document.RootElement;
+                string symbol = root.GetProperty("symbol").GetString();
+                string name = root.GetProperty("name").GetString();
+                string close = root.GetProperty("close").GetString();
+                string percent_change = root.GetProperty("percent_change").GetString();
+                string dateTime = DateTime.Now.ToString();
+                CurrentData cData = new CurrentData()
+                {
+                    Code=symbol,
+                    Name=name,
+                    Difference=percent_change,
+                    Value=close,
+                    Time = dateTime
+                };
+                // Сбор данных в List<T>
+                parserResult.Add(cData);
             }
             return parserResult;
-        }
-
-        private string getName (string code)
-        {
-            switch (code)
-            {
-                case "ETH/USD":
-                    return "Эфириум к доллару";
-                case "EUR/USD":
-                    return "Евро к доллару";
-                case "JPM":
-                    return "JPMorgan Chase & Co";
-                case "SPX":
-                    return "Standard and Poor's 500";
-                case "SPY":
-                    return "SPDR® S&P 500";
-                default: 
-                    return "Что-то новое...";
-            }
         }
     }
 }

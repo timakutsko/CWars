@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Windows.Forms;
 using KTS.Parsing.Data;
 
 namespace KTS.Parsing.Runner
@@ -9,29 +10,41 @@ namespace KTS.Parsing.Runner
     {
         static void Main(string[] args)
         {
-            ParsingData parser = new ParsingData("https://twelvedata.com/pricing");
-            string path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            string name = "MyParsing";
-            WriteData writeData = new WriteData(path, name);
-            int counter = 1;
+            // Создаю список символов для запросов. На хард-коде, после - можно через ui сделать выборку, что писать
+            string[] requestsSymbol = new string[] {
+                "ETH/USD",
+                "EUR/USD",
+                "JPM",
+                "SPX",
+                "USD/JPY"
+            };
+            // Пользовательский ввод
+            Console.WriteLine("Укажи путь для сохранения:");
+            string userPath = Console.ReadLine();
+            userPath = string.Concat(userPath, "\\sample1.xlsx");
+            // Возможность выхода из приложения
+            Console.CancelKeyPress += new ConsoleCancelEventHandler(myHandler);
+            // Обработка
+            ParsingData parser = new ParsingData();
+            WriteData writeData = new WriteData(userPath);
+            Console.WriteLine("Процесс записи запущен. Для прекращения - нажми 'Ctrl+C'");
+            int count = 0;
             while (true)
             {
-                Console.WriteLine("Введи 'STR' для старта, 'EXT' для выхода: ");
-                string userInput = Console.ReadLine();
-                if (userInput.ToLower() == "str")
+                count++;
+                Console.WriteLine($"Итерация №{count} прошла успешно!");
+                List<CurrentData> parsingResult = parser.RunParser(requestsSymbol);
+                writeData.Generate(parsingResult);
+                Thread.Sleep(60000);
+            }
+        }
+        private static void myHandler(object sender, ConsoleCancelEventArgs args)
+        {
+            {
+                if (args.SpecialKey == ConsoleSpecialKey.ControlC)
                 {
-                    counter++;
-                    Console.WriteLine("Начинаю писать данные...");
-                    List<CurrentData> parserData = parser.RunParser();
-                    writeData.RunWriter(parserData, counter);
-                    Console.WriteLine("Текущая запись завершена.");
-                    Thread.Sleep(10000);
-                }
-                else if (userInput.ToLower() == "ext")
-                {
-                    Console.WriteLine("Завершено!");
-                    parser.Driver.Quit();
-                    break;
+                    Console.WriteLine("Процесс записи завершен!");
+                    Environment.Exit(0);
                 }
             }
         }
